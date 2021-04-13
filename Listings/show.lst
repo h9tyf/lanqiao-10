@@ -1,0 +1,115 @@
+C51 COMPILER V9.60.0.0   SHOW                                                              04/13/2021 21:48:25 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE SHOW
+OBJECT MODULE PLACED IN .\Objects\show.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE show.c OMF2 OPTIMIZE(8,SPEED) BROWSE DEBUG PRINT(.\Listings\show.lst) TA
+                    -BS(2) OBJECT(.\Objects\show.obj)
+
+line level    source
+
+   1          #include "var.h"
+   2          void change_show()
+   3          {
+   4   1        u8 i;
+   5   1        u8 led_value = 0xff;
+   6   1        
+   7   1        if(debug == 1){
+   8   2          u8 temp = show_num;
+   9   2          for(i = 7; i >= 1; i--){
+  10   3            if(i != 7 && temp == 0){
+  11   4              digital_tube[i] = OFF;
+  12   4            } else {
+  13   4              digital_tube[i] = temp % 10;
+  14   4            }
+  15   3            temp /= 10;
+  16   3          }
+  17   2          return;
+  18   2        }
+  19   1        
+  20   1        if(digital_tube_state == 1){
+  21   2          if(show_state == FRE){
+  22   3            long temp;
+  23   3            temp = fre;
+  24   3            digital_tube[0] = SHOW_F;
+  25   3            digital_tube[1] = OFF;
+  26   3            for(i = 7; i >= 2; i--){
+  27   4              if(i != 7 && temp == 0){
+  28   5                digital_tube[i] = OFF;
+  29   5              } else {
+  30   5                digital_tube[i] = temp % 10;
+  31   5              }
+  32   4              temp /= 10;
+  33   4            }
+  34   3          } else if(show_state == VOL){
+  35   3            u8 temp;
+  36   3            if(dac_mode == V2){
+  37   4              temp = 200;
+  38   4            } else {
+  39   4              temp = dac_v100;
+  40   4            }
+  41   3            
+  42   3            digital_tube[0] = SHOW_U;
+  43   3            for(i = 7; i >= 1; i--){
+  44   4              if(i < 5 && temp == 0){
+  45   5                digital_tube[i] = OFF;
+  46   5              } else {
+  47   5                digital_tube[i] = temp % 10;
+  48   5              }
+  49   4              temp /= 10;
+  50   4            }
+  51   3          }
+  52   2        }else{
+  53   2          for(i = 0; i < 8; i++){
+  54   3            digital_tube[i] = OFF;
+C51 COMPILER V9.60.0.0   SHOW                                                              04/13/2021 21:48:25 PAGE 2   
+
+  55   3          }
+  56   2        }
+  57   1        
+  58   1        if(led_state == 1){
+  59   2          led_value = 0xff;
+  60   2          if(show_state == VOL){
+  61   3            led_value &= 0xfe;
+  62   3          } else if(show_state == FRE){
+  63   3            led_value &= 0xfd;
+  64   3          }
+  65   2          
+  66   2          if(dac_v100 >= 150 && dac_v100 < 250){
+  67   3            led_value &= 0xfb;
+  68   3          }
+  69   2          if(dac_v100 >= 350){
+  70   3            led_value &= 0xfb;
+  71   3          }
+  72   2          
+  73   2          if(fre >= 1000 && fre < 5000){
+  74   3            led_value &= 0xf7;
+  75   3          }
+  76   2          if(fre >= 10000){
+  77   3            led_value &= 0xf7;
+  78   3          }
+  79   2          
+  80   2          if(dac_mode == VRB2){
+  81   3            led_value &= 0xef;
+  82   3          }
+  83   2        }
+  84   1        LatchControl(4, led_value);
+  85   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    445    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

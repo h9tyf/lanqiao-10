@@ -30,7 +30,7 @@ extern u8 digital_tube_state;//initial on
 #define SHOW_F 12
 
 extern u8 dac_v100;
-extern long fre;
+extern unsigned int fre;
 
 
 extern u8 digital_tube[8];

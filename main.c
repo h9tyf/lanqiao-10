@@ -18,7 +18,9 @@ u8 led_state = 1;// initial on
 u8 digital_tube_state = 1;//initial on
 
 u8 dac_v100;
-long fre;
+unsigned int fre_count1;
+unsigned int fre_count2;
+unsigned int fre;
 
 void LatchControl(u8 num, u8 value)
 {
@@ -31,7 +33,7 @@ void LatchControl(u8 num, u8 value)
 }
 
 u8 index;
-void func() interrupt 1
+void func() interrupt 3
 {
 	u8 value;
 	SysTick++;
@@ -47,15 +49,27 @@ void func() interrupt 1
 	
 }
 
+void Timer1Init(void)		//1??@12.000MHz
+{
+	AUXR |= 0x40;		//?????1T??
+	TMOD &= 0x0F;		//???????
+	TL1 = 0x20;		//??????
+	TH1 = 0xD1;		//??????
+	TF1 = 0;		//??TF1??
+	TR1 = 1;		//???1????
+}
+
 void Timer0Init(void)		//1??@12.000MHz
 {
 	AUXR |= 0x80;		//?????1T??
 	TMOD &= 0xF0;		//???????
-	TL0 = 0x20;		//??????
-	TH0 = 0xD1;		//??????
-	TF0 = 0;		//??TF0??
-	TR0 = 1;		//???0????
+	TMOD |= 0x04;
+	TL0 = 0;		//??????
+	TH0 = 0;		//??????
+	TF0 = 0;		//??TF1??
+	TR0 = 1;		//???1????
 }
+
 
 void get_vrb2()
 {
@@ -63,7 +77,7 @@ void get_vrb2()
 	IIC_Start();
 	IIC_SendByte(0x90);
 	IIC_WaitAck();
-	IIC_SendByte(0x03);
+	IIC_SendByte(0x43);
 	IIC_WaitAck();
 	IIC_Start();
 	IIC_SendByte(0x91);
@@ -88,7 +102,7 @@ void change_output_v()
 	IIC_Start();
 	IIC_SendByte(0x90);
 	IIC_WaitAck();
-	IIC_SendByte(0x03);
+	IIC_SendByte(0x43);
 	IIC_WaitAck();
 	IIC_SendByte(out_v);
 	IIC_WaitAck();
@@ -98,7 +112,10 @@ void change_output_v()
 //get fre of ne555
 void get_fre()
 {
-	fre = 3000;
+	
+	fre_count1 = fre_count2;
+	fre_count2 = (TH0 << 8) | TL0;
+	fre = fre_count2 - fre_count1;
 }
 
 void change_state()
@@ -110,8 +127,9 @@ void change_state()
 void main()
 {
 	Timer0Init();
+	Timer1Init();
 	EA = 1;
-	ET0 = 1;
+	ET1 = 1;
 	P3 |= 0x0f;
 	LatchControl(4, 0xff);
 	debug = 0;
@@ -129,6 +147,11 @@ void main()
 			EA = 0;
 			get_vrb2();
 			//change_output_v();
+			EA = 1;
+		}
+		
+		if(tickBkp % 1000 == 0){
+			EA = 0;
 			get_fre();
 			EA = 1;
 		}
@@ -138,6 +161,8 @@ void main()
 			change_show();
 			EA = 1;
 		}
+		
+		
 		
 		while(tickBkp == SysTick);
 	}
