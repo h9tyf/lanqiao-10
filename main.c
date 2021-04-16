@@ -93,11 +93,14 @@ void get_vrb2()
 //change output of dac
 void change_output_v()
 {
-	u8 out_v;
+	long out_v;
 	if(dac_mode == V2){
-		out_v = 2 / 5 * 256;
+		out_v = 2  * 256 / 5;
 	} else {
-		out_v = dac_v100 / 100 / 5 * 256;
+		out_v = dac_v100 * 256L / 500L;
+	}
+	if(out_v >= 255){
+		out_v = 255;
 	}
 	IIC_Start();
 	IIC_SendByte(0x90);
@@ -143,10 +146,10 @@ void main()
 			EA = 1;
 		}
 		
-		if(tickBkp % 10 == 0){
+		if(tickBkp % 100 == 0){
 			EA = 0;
 			get_vrb2();
-			//change_output_v();
+			change_output_v();
 			EA = 1;
 		}
 		

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   MAIN                                                              04/13/2021 21:48:24 PAGE 1   
+C51 COMPILER V9.60.0.0   MAIN                                                              04/16/2021 16:57:24 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52          void Timer1Init(void)   //1??@12.000MHz
   53          {
   54   1        AUXR |= 0x40;   //?????1T??
-C51 COMPILER V9.60.0.0   MAIN                                                              04/13/2021 21:48:24 PAGE 2   
+C51 COMPILER V9.60.0.0   MAIN                                                              04/16/2021 16:57:24 PAGE 2   
 
   55   1        TMOD &= 0x0F;   //???????
   56   1        TL1 = 0x20;   //??????
@@ -105,94 +105,97 @@ line level    source
   93          //change output of dac
   94          void change_output_v()
   95          {
-  96   1        u8 out_v;
+  96   1        long out_v;
   97   1        if(dac_mode == V2){
-  98   2          out_v = 2 / 5 * 256;
+  98   2          out_v = 2  * 256 / 5;
   99   2        } else {
- 100   2          out_v = dac_v100 / 100 / 5 * 256;
+ 100   2          out_v = dac_v100 * 256L / 500L;
  101   2        }
- 102   1        IIC_Start();
- 103   1        IIC_SendByte(0x90);
- 104   1        IIC_WaitAck();
- 105   1        IIC_SendByte(0x43);
- 106   1        IIC_WaitAck();
- 107   1        IIC_SendByte(out_v);
- 108   1        IIC_WaitAck();
- 109   1        IIC_Stop();
- 110   1      }
- 111          
- 112          //get fre of ne555
- 113          void get_fre()
- 114          {
- 115   1        
- 116   1        fre_count1 = fre_count2;
-C51 COMPILER V9.60.0.0   MAIN                                                              04/13/2021 21:48:24 PAGE 3   
+ 102   1        if(out_v >= 255){
+ 103   2          out_v = 255;
+ 104   2        }
+ 105   1        IIC_Start();
+ 106   1        IIC_SendByte(0x90);
+ 107   1        IIC_WaitAck();
+ 108   1        IIC_SendByte(0x43);
+ 109   1        IIC_WaitAck();
+ 110   1        IIC_SendByte(out_v);
+ 111   1        IIC_WaitAck();
+ 112   1        IIC_Stop();
+ 113   1      }
+ 114          
+ 115          //get fre of ne555
+ 116          void get_fre()
+C51 COMPILER V9.60.0.0   MAIN                                                              04/16/2021 16:57:24 PAGE 3   
 
- 117   1        fre_count2 = (TH0 << 8) | TL0;
- 118   1        fre = fre_count2 - fre_count1;
- 119   1      }
- 120          
- 121          void change_state()
- 122          {
- 123   1        check_button();
- 124   1        respond_to_button();
- 125   1      }
- 126          
- 127          void main()
- 128          {
- 129   1        Timer0Init();
- 130   1        Timer1Init();
- 131   1        EA = 1;
- 132   1        ET1 = 1;
- 133   1        P3 |= 0x0f;
- 134   1        LatchControl(4, 0xff);
- 135   1        debug = 0;
- 136   1        
- 137   1        while(1){
- 138   2          long tickBkp = SysTick;
- 139   2          
- 140   2          if(tickBkp % 2 == 0){
- 141   3            EA = 0;
- 142   3            change_state();
- 143   3            EA = 1;
- 144   3          }
- 145   2          
- 146   2          if(tickBkp % 10 == 0){
- 147   3            EA = 0;
- 148   3            get_vrb2();
- 149   3            //change_output_v();
- 150   3            EA = 1;
- 151   3          }
- 152   2          
- 153   2          if(tickBkp % 1000 == 0){
- 154   3            EA = 0;
- 155   3            get_fre();
- 156   3            EA = 1;
- 157   3          }
- 158   2          
- 159   2          if(tickBkp % 2 == 0){
- 160   3            EA = 0;
- 161   3            change_show();
- 162   3            EA = 1;
- 163   3          }
- 164   2          
- 165   2          
- 166   2          
- 167   2          while(tickBkp == SysTick);
- 168   2        }
- 169   1        
- 170   1        
- 171   1      }
+ 117          {
+ 118   1        
+ 119   1        fre_count1 = fre_count2;
+ 120   1        fre_count2 = (TH0 << 8) | TL0;
+ 121   1        fre = fre_count2 - fre_count1;
+ 122   1      }
+ 123          
+ 124          void change_state()
+ 125          {
+ 126   1        check_button();
+ 127   1        respond_to_button();
+ 128   1      }
+ 129          
+ 130          void main()
+ 131          {
+ 132   1        Timer0Init();
+ 133   1        Timer1Init();
+ 134   1        EA = 1;
+ 135   1        ET1 = 1;
+ 136   1        P3 |= 0x0f;
+ 137   1        LatchControl(4, 0xff);
+ 138   1        debug = 0;
+ 139   1        
+ 140   1        while(1){
+ 141   2          long tickBkp = SysTick;
+ 142   2          
+ 143   2          if(tickBkp % 2 == 0){
+ 144   3            EA = 0;
+ 145   3            change_state();
+ 146   3            EA = 1;
+ 147   3          }
+ 148   2          
+ 149   2          if(tickBkp % 100 == 0){
+ 150   3            EA = 0;
+ 151   3            get_vrb2();
+ 152   3            change_output_v();
+ 153   3            EA = 1;
+ 154   3          }
+ 155   2          
+ 156   2          if(tickBkp % 1000 == 0){
+ 157   3            EA = 0;
+ 158   3            get_fre();
+ 159   3            EA = 1;
+ 160   3          }
+ 161   2          
+ 162   2          if(tickBkp % 2 == 0){
+ 163   3            EA = 0;
+ 164   3            change_show();
+ 165   3            EA = 1;
+ 166   3          }
+ 167   2          
+ 168   2          
+ 169   2          
+ 170   2          while(tickBkp == SysTick);
+ 171   2        }
+ 172   1        
+ 173   1        
+ 174   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    555    ----
+   CODE SIZE        =    624    ----
+C51 COMPILER V9.60.0.0   MAIN                                                              04/16/2021 16:57:24 PAGE 4   
+
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-C51 COMPILER V9.60.0.0   MAIN                                                              04/13/2021 21:48:24 PAGE 4   
-
-   DATA SIZE        =     39       9
+   DATA SIZE        =     39      12
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----
